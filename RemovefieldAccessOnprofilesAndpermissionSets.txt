@@ -1,0 +1,99 @@
+List<FieldPermissions> recordsWithAccess =[SELECT Id,PermissionsRead FROM FieldPermissions WHERE SObjectType = 'Apttus__APTS_Agreement__c'AND Field = 'Apttus__APTS_Agreement__c.Apttus__Request_Date__c' AND PermissionsRead=true];
+List<FieldPermissions> updatedOnes=new List<FieldPermissions>();
+for(FieldPermissions current:recordsWithAccess ){
+    current.permissionsedit=false;
+    current.PermissionsRead=false;
+    updatedOnes.add(current);
+}
+
+System.debug('size is'+recordsWithAccess.size());
+try{
+
+   // database.update(updatedOnes);
+    Database.SaveResult [] updateResult = Database.update(updatedOnes, false);
+	for (Database.SaveResult r : updateResult)
+	{
+		if (!r.isSuccess())
+		{
+			for (Database.Error e : r.getErrors())
+			{
+    			System.debug('error is '+e);
+			}
+		}
+    }
+}
+catch(Exception e){
+    System.debug('error is '+e);
+}
+System.debug('job completed');
+
+
+
+======================================================================================
+
+
+
+
+SELECT Id, Field, SObjectType, PermissionsRead, PermissionsEdit, ParentId, Parent.IsOwnedByProfile
+FROM FieldPermissions 
+WHERE SObjectType = 'Apttus__APTS_Agreement__c'
+    AND Field = 'Apttus__APTS_Agreement__c.Apttus__Request_Date__c'
+AND PermissionsRead=true 
+
+
+   
+Select ID,Name from PermissionSet where id='0PS30000000ZI8PGAW'
+
+
+
+SELECT Profile.Name FROM PermissionSet
+WHERE IsOwnedByProfile = true AND Id IN (
+    SELECT ParentId FROM ObjectPermissions
+    WHERE PermissionsRead = true
+    AND SObjectType = 'Apttus__APTS_Agreement__c'
+)
+
+// here parentId --> means permission set Id
+
+List<FieldPermissions> a =[SELECT ParentId FROM FieldPermissions WHERE SObjectType = 'Apttus__APTS_Agreement__c'AND Field = 'Apttus__APTS_Agreement__c.Apttus__Request_Date__c'AND PermissionsRead=true];
+List<Id> ids=new List<Id>();
+for(FieldPermissions current:a){
+    ids.add(current.ParentId);
+}
+List<PermissionSet> aa=[Select Name from PermissionSet where id IN:ids];
+for(PermissionSet cur:aa){
+    System.debug('name is: '+cur.Name);
+}
+
+
+https://salesforce.stackexchange.com/questions/153986/query-which-profiles-have-read-access-to-specific-object
+
+
+
+SELECT Parent.Profile.Name FROM ObjectPermissions
+WHERE Parent.IsOwnedByProfile = true AND SObjectType = 'Apttus__APTS_Agreement__c' 
+
+
+SELECT Profile.Name FROM PermissionSet
+WHERE IsOwnedByProfile = true AND Id IN (
+    SELECT ParentId FROM ObjectPermissions
+    WHERE PermissionsRead = true
+    AND SObjectType = 'MyObject__c'
+)
+
+
+
+SELECT Id,Profile.Name FROM PermissionSet
+WHERE IsOwnedByProfile = true AND Id IN (
+   SELECT ParentId FROM FieldPermissions WHERE SObjectType = 'Apttus__APTS_Agreement__c'AND Field = 'Apttus__APTS_Agreement__c.Apttus__Request_Date__c'AND PermissionsRead=true
+)
+
+SELECT Id,Profile.Name FROM PermissionSet
+WHERE IsOwnedByProfile = true AND Id IN (
+   SELECT ParentId FROM FieldPermissions WHERE SObjectType = 'Apttus__APTS_Agreement__c'AND Field = 'Apttus__APTS_Agreement__c.Apttus__Request_Date__c'AND PermissionsRead=true
+)
+
+
+
+
+
